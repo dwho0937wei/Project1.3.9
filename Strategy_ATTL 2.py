@@ -16,8 +16,8 @@ Aggregated results are stored in tournament.txt
 Unpublished work (c)2013 Project Lead The Way
 CSE Project 1.3.5 Collaborating on a Project
 Draft, Do Not Distribute
-
-3/20/17 (DHRR)
+Version 2/22/2017 ATTL. 
+'''
 
 import random
 def play_round(player1, player2, history1, history2, score1, score2):
@@ -173,19 +173,18 @@ def get_action(player, history, opponent_history, score, opponent_score, getting
     ######
     ######
     #
-    elif player == 3:
-        if getting_team_name:
-            return 'loyal vengeful'
-        else:
-            # use history, opponent_history, score, opponent_score
-            # to compute your strategy
-            if len(opponent_history)==0: #It's the first round: collude
-                return 'c'
-            elif history[-1]=='c' and opponent_history[-1]=='b':
-                return 'b' # betray is they were severely punished last time
-            else:
-                return 'c' #otherwise collude
-
+class TitForTat (player)
+    """A player starts by cooperaing and then mimcs previous move by opponent. """
+    def strategy(self, opponent):
+        """ Begins by playing 'C' : This is affected by the history of the opponent: the strategy simply repeats the last action of the opponent """
+        try:
+            return opponent.history[-1]
+        except IndexError:
+            return 'C'
+            
+    def __repr__(self):
+        """ The string method for the strategy. """
+        return "Tit For Tat"
 
 
 
@@ -201,15 +200,22 @@ def get_action(player, history, opponent_history, score, opponent_score, getting
     #
     elif player == 4:
         if getting_team_name:
-            return 'betray every 3rd round'
+            return 'It Can Be Anything'
         else:
             # use history, opponent_history, score, opponent_score
             # to compute your strategy
-            size = len(history)
-            if(size%3==0): #the number of rounds played is a multiple of 3
-                return 'c'
+            if opponent_history[0:9]=='winning' : # Check to if partner/self are mactched
+                return 'c' # if so collude every time to avpid loss of points
+            elif len (opponent_history)==0: # Checks to see if first turn
+                return 'winning' # Acts as a identifier between partners
+            elif opponent_history[0:9] == 'bbbbbbb': # Checks if opponent is only betraying
+                return 5 # return int to so score does not change
             else:
-                return 'b'           
+                end = random.randint(1,100) # generates a random number
+                if end == 49: # Checks to see if it is this number
+                    return 'c' # This will randomly throw a 'c' to break a streak
+                else:
+                    return opponent_history[-1] # DO what the opponent did last            
     
     
     
@@ -226,17 +232,16 @@ def get_action(player, history, opponent_history, score, opponent_score, getting
     #
     elif player == 5:
         if getting_team_name:
-            return 'betrayer'
-
+            return 'loyal vengeful'
         else:
             # use history, opponent_history, score, opponent_score
             # to compute your strategy
             if len(opponent_history)==0: #It's the first round: collude
                 return 'c'
-            elif history[-1]=='b' and opponent_history[-1]=='b':
+            elif history[-1]=='c' and opponent_history[-1]=='b':
                 return 'b' # betray is they were severely punished last time
             else:
-                return 'b' #otherwise collude
+                return 'c' #otherwise collude
     
     
     
@@ -246,26 +251,21 @@ def get_action(player, history, opponent_history, score, opponent_score, getting
 
 
 
-  ######
+    ######
     ######        
     #
     elif player == 6:
         if getting_team_name:
-            return 'loyal vengeful and continues in betraying once betrayed'
+            return 'It Can Be Anything'
         else:
-            # use history, opponent_history, score, opponent_score
-            # to compute your strategy
-                size = len(history)
-                if len(opponent_history)==0: #It's the first round: collude
-                    return 'c'
-                elif history[-1]=='c' and opponent_history[-1]=='b':
-                    return 'b' # betray if they were severely punished last time
-                elif history[-1]=='b' and opponent_history[-1]=='b':
-                    return 'b' # betray if they were punished again 
-                elif history[-1]=='b' and opponent_history[-1]=='c':
-                    return 'b' # got used to betraying 
-                else:
-                    return 'c' #otherwise collude
+            if opponent_history[0:3]=='winning':
+                return 'c'
+            elif len(opponent_history)==0
+                return 'winning' 
+            elif opponent_history[0:3] == 'bbbbbbb' :
+                return 5
+            else:
+                return 'b' 
             
     
 
@@ -532,17 +532,30 @@ def get_action(player, history, opponent_history, score, opponent_score, getting
     ######
     ######
     #
-    elif player == 17:
-        if getting_team_name:
-            return 'loyal vengeful'
-        else:
-            if len(opponent_history)==0: #It's the first round: collude
-                return 'c'
-            elif history[-1]=='c' and opponent_history[-1]=='b':
-                return 'b' # betray is they were severely punished last time
-            else:
-                return 'c' #otherwise collude
+class Defector(Player): 
+    """A player who only ever defeats"""
     
+    name = 'Defector' 
+    
+    def strategy(self, opponent):
+        return 'D' 
+        
+        
+class TrickyDefector(Player): 
+    """A defector that is trying to be tricky."""
+    
+    name = "Tricky Defector" 
+    
+    def strategy(self, opponent):
+        """Almost always defects, but will try to trick the opponent into cooperating.
+        
+        Defect if opponent has cooperated at least once in the past and has defected
+        for the last 3 turns in a row.
+        """
+        if 'C' in opponent.history and opponent.history[-3:] == ['D']*3:
+            return 'c'
+        return 'D' 
+            
     
 
 
